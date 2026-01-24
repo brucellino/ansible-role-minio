@@ -1,0 +1,36 @@
+- name: Get Minio Server
+  ansible.builtin.get_url:
+    url: "{{ minio_url }}/server/minio/release/linux-{{ minio_arch[ansible_architecture] }}/minio"
+    dest: "{{ minio_install_dir }}"
+    checksum: "sha256:{{ server_sha256[minio_arch[ansible_architecture]] | regex_replace('(^.*) m.*$', '\\1') }}"
+    mode: 'a+rwx'
+    owner: root
+    group: root
+  when: ansible_architecture == 'armv7l' or ansible_architecture == 'aarch64'
+
+- name: Template defaults
+  ansible.builtin.template:
+    src: etc/default/minio.j2
+    dest: /etc/default/minio
+    backup: true
+    mode: "0644"
+    owner: root
+    group: root
+    validate: bash %s
+  notify: restart minio
+
+- name: Template Systemd Unit
+  ansible.builtin.template:
+    src: etc/systemd/system/minio.service.j2
+    dest: /etc/systemd/system/minio.service
+    backup: true
+    mode: "0644"
+    owner: root
+    group: root
+  notify: reload systemd
+
+- name: Start minio
+  ansible.builtin.service:
+    name: minio # required. Name of the service.
+    state: started
+    enabled: true

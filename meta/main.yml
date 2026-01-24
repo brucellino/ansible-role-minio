@@ -1,0 +1,17 @@
+galaxy_info:
+  author: Bruce Becker
+  description: Ansible role to deploy minio
+  company: Hashi@Home
+  role_name: minio
+  namespace: brucellino
+  license: MIT
+  min_ansible_version: "2.10"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - bionic
+        - focal
+
+  galaxy_tags: []
+
+dependencies: []

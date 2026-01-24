@@ -1,0 +1,17 @@
+---
+# defaults file for minio
+minio_url: https://dl.min.io/
+minio_arch:
+  armv7l: arm
+  aarch64: arm64
+minio_install_dir: /usr/sbin/
+minio_data_dir: /minio
+binary:
+  server: minio
+  client: mc
+
+minio_user: minio
+minio_group: minio
+
+install: false
+purge: true

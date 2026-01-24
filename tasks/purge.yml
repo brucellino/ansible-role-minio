@@ -1,0 +1,21 @@
+- name: Check Minio service
+  ansible.builtin.service_facts:
+
+- name: Stop Minio
+  ansible.builtin.service:
+    name: minio
+    state: stopped
+    enabled: false
+    use: auto
+  when: ("minio" in ansible_facts.services)
+
+- name: Remove service and configuration
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+    recurse: false
+  loop:
+    - "{{ minio_install_dir }}/minio"
+    - /etc/default/minio
+    - /etc/systemd/system/minio.service
+  notify: reload systemd

@@ -1,0 +1,45 @@
+---
+# tasks file for minio
+- name: Ensure prerequisites
+  ansible.builtin.package:
+    name: passwd
+    state: present
+
+- name: Ensure minio group
+  ansible.builtin.group:
+    name: "{{ minio_group }}"
+    state: present
+    system: false
+
+- name: Ensure minio user
+  ansible.builtin.user:
+    name: "{{ minio_user }}"
+    state: present
+    system: false
+    groups:
+      - "{{ minio_group }}"
+
+
+- name: Get Minio sha256
+  ansible.builtin.set_fact:
+    server_sha256:
+      arm64: '{{ lookup("url", "https://dl.min.io/server/minio/release/linux-arm64/minio.sha256sum") }}'
+      arm: '{{ lookup("url", "https://dl.min.io/server/minio/release/linux-arm/minio.sha256sum") }}'
+    client_sha256:
+      arm64: '{{ lookup("url", "https://dl.min.io/client/mc/release/linux-arm64/mc.sha256sum") }}'
+      arm: '{{ lookup("url", "https://dl.min.io/client/mc/release/linux-arm/mc.sha256sum") }}'
+
+- name: Perform volumes tasks
+  ansible.builtin.include_tasks: volumes.yml
+  tags:
+    - volumes
+
+- name: Perform install tasks
+  ansible.builtin.include_tasks: install.yml
+  tags: ["install"]
+  when: install | bool
+
+- name: Perform purge tasks
+  ansible.builtin.include_tasks: purge.yml
+  tags: ["purge"]
+  when: not (install | bool)

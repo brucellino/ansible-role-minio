@@ -1,0 +1,33 @@
+---
+# minio/tasks/volumes.yml
+# Tasks to create and mount the volumes for minio
+- name: Stat devices
+  ansible.builtin.stat:
+    path: "/dev/mmcblk0p{{ item }}"
+    follow: false
+    get_checksum: true
+    checksum_algorithm: md5
+    get_mime: true
+    get_attributes: true
+  loop: "{{ range(5, 9) | list }}"
+  register: stats
+
+- name: Mount filesystems
+  ansible.posix.mount:
+    path: "/minio{{ item - 4 }}"
+    state: mounted
+    src: "/dev/mmcblk0p{{ item }}"
+    fstype: ext4
+    opts: "rw,noatime"
+    boot: true
+    backup: true
+  loop: "{{ range(5, 9) | list }}"
+  # when: stats.results[item.inner].stat.exists | bool
+
+- name: Ensure permissions
+  ansible.builtin.file:
+    path: "/minio{{ item - 4 }}"
+    mode: "0700"
+    owner: "{{ minio_user }}"
+    group: "{{ minio_group }}"
+  loop: "{{ range(5, 9) | list }}"
